@@ -1,0 +1,32 @@
+extraPorts:
+  - name: beats
+    containerPort: 5044
+
+service:
+  annotations:
+  type: LoadBalancer
+  ports:
+    - name: beats
+      port: 5044
+      protocol: TCP
+      targetPort: 5044
+
+
+logstashPipeline:
+  logstash.conf: |
+    input {
+      gelf {
+        id => "gelf"
+        use_tcp => true
+        use_udp => false
+        port => 5044
+      }
+    }
+    output {
+    elasticsearch {
+           hosts => ["http://elasticsearch-master:9200"]
+           index => "spark-logs-%{+YYYY.MM.dd}"
+           codec => rubydebug
+         }
+    }
+
